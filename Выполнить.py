@@ -1,9 +1,33 @@
 import csv
 import glob
-from lib.search_coords import convert_coords, search_coords
+import datetime
+from lib.dict_for_dict import dict_ETC
 from lib.convert_to_img import convert_to_img
-from lib.work_with_folders import sort_folders, get_name_folder, create_folders, check_or_create_folder
+from lib.search_coords import convert_coords, search_coords
+from lib.work_with_folders import sort_folders, get_name_folder, create_folders
 from lib.get_data_bs_list_and_coords import base_station_get_from_export_romes, bs_lan_lon_from_export_romes
+
+dict_for_operator = \
+    {
+        'Общество с ограниченной ответственностью «Скартел»': 'Скартел   ',
+        'Общество с ограниченной ответственностью \"Скартел\"': 'Скартел   ',
+
+        'Общество с ограниченной ответственностью \"Т2 Мобайл\"': 'Т2 Мобайл ',
+        'Общество с ограниченной ответственностью «Т2 Мобайл»': 'Т2 Мобайл ',
+
+        'Публичное акционерное общество «Мобильные ТелеСистемы»': 'МТС       ',
+        'Публичное акционерное общество \"Мобильные ТелеСистемы\"': 'МТС       ',
+
+        'Публичное акционерное общество \"МегаФон\"': 'МегаФон   ',
+        'Публичное акционерное общество «МегаФон»': 'МегаФон   ',
+
+        'Публичное акционерное общество \"Ростелеком\"': 'Ростелеком',
+        'Публичное акционерное общество «Ростелеком»': 'Ростелеком',
+        'Публичное акционерное общество междугородной и международной электрической связи \"Ростелеком\"': 'Ростелеком',
+
+        'Публичное акционерное общество «Вымпел-Коммуникации»': 'ВымпелКом ',
+        'Публичное акционерное общество \"Вымпел-Коммуникации\"': 'ВымпелКом '
+    }
 
 
 DICT_OPERATOR = {'2': 'megafon', '20': 't2_mobile', '99': 'beeline'}
@@ -13,6 +37,7 @@ DICT_FREQ = {'6175': '793.5', '6200': '796.0', '6338': '809.8', '6350': '811.0',
              '1275': '1812.5', '1575': '1842.5', '1425': '1827.5', '1850': '1870.0',
              '2850': '2630.0', '3200': '2665.0', '3300': '2675.0', '3048': '2649.8', '3400': '2685.0',
              '37900': '2585.0', '38100': '2605.0', '39550': '2390.0', '38750': '2310.0', '38950': '2330.0'}
+
 
 BASE_STATION_LIST = []
 BASE_STATION_OPERATOR = dict()
@@ -50,6 +75,8 @@ def search_row(tecRaw_file):
 
     print(' 3.2 Создание папок')
     create_folders(BASE_STATION_LIST, DICT_OPERATOR, BASE_STATION_OPERATOR)
+
+    print('   Прогнозируемое время завершения: ')
 
     print(' 3.3')
     for i in BASE_STATION_LIST:
@@ -139,7 +166,7 @@ def search_row(tecRaw_file):
                             if float(N_error) + float(E_error) < 16.0:
                                 temp_search_list = search_coords(E, N)
                                 if temp_search_list is not None:
-                                    [print(x, file=file_with_coords) for x in temp_search_list if x]
+                                    [print(f'Технология: {dict_ETC[str(x[2]).strip()] if x[2] in dict_ETC else x[2]} Оператор: {dict_for_operator[x[0]]} Адрес: {x[1]}', file=file_with_coords) for x in temp_search_list if x]
 
                     with open(f'lib\\temp_folder\{i}_{name_operator}\{i}_{name_operator}_{freq_x.strip()}.xml',
                               'w') as temp_result_file_xml:
@@ -208,6 +235,9 @@ def search_row(tecRaw_file):
 
 if __name__ == "__main__":
 
+    start_time = datetime.datetime.now()
+    print(f'start_time: {start_time}')
+    print('')
     print('1. Получение данных')
     print(' - 1.1 Получение данных в папке Исходные_данные')
     export_file_csv = glob.glob('Исходные_данные\**\*.csv', recursive=True)
@@ -227,5 +257,11 @@ if __name__ == "__main__":
     print('4. Сортировка папок')
     sort_folders(name_folder)
 
-    print('')
     print('5. Выполнено')
+
+    print('')
+    end_time = datetime.datetime.now()
+    print(f'end_time: {end_time}')
+
+    elapsed_time = end_time - start_time
+    print(f'elapsed_time: {elapsed_time}')

@@ -30,7 +30,7 @@ def get_name_db_from_file():
 
 
 data_name = get_name_db_from_file()
-print(data_name)
+print(f'Используемая БД: {data_name}')
 
 
 def query_data_from_database(list_coords):
@@ -42,10 +42,8 @@ def query_data_from_database(list_coords):
         cursor = connection.cursor()
 
         for x in list_coords:
-            # ['Наименование РЭС', 'Адрес', '№ вида ЕТС', 'Владелец', 'Широта', 'Долгота', 'Частоты',
-            # 'Дополнительные параметры', 'Классы излучения', 'Серия последнего действующего РЗ/СоР',
-            # 'Номер последнего действующего РЗ/СоР']]
-            cursor.execute(f"SELECT * FROM \'SQL Results\' WHERE Широта = '{x.split(';')[0]}' AND Долгота = '{x.split(';')[1]}'")
+            cursor.execute(
+                f"SELECT Владелец, Адрес, \'№ вида ЕТС' FROM \'SQL Results\' WHERE Широта = '{x.split(';')[0]}' AND Долгота = '{x.split(';')[1]}'")
             result.append(cursor.fetchall())
 
         return recursive_flatten_generator(result)
